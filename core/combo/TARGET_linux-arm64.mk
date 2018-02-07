@@ -34,10 +34,10 @@ TARGET_ARCH_VARIANT := armv8
 endif
 
 # Decouple NDK library selection with platform compiler version
-TARGET_NDK_GCC_VERSION := 4.9
+TARGET_NDK_GCC_VERSION := 6.x
 
 ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
-TARGET_GCC_VERSION := 4.9
+TARGET_GCC_VERSION := 6.x
 else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
@@ -70,9 +70,6 @@ $(call _gen_toc_command_for_elf,$(1),$(2))
 endef
 
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
-
-TARGET_GLOBAL_CFLAGS += \
-    -fno-strict-aliasing \
 
 TARGET_GLOBAL_CFLAGS += \
 			-fstack-protector-strong \
@@ -125,10 +122,17 @@ TARGET_GLOBAL_LDFLAGS += -Wl,--allow-shlib-undefined
 
 TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
 
+# ArchiDroid
+include $(BUILD_SYSTEM)/archidroid.mk
+
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += $(ARCHIDROID_GCC_CFLAGS)
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += $(ARCHIDROID_GCC_CPPFLAGS)
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_LDFLAGS += $(ARCHIDROID_GCC_LDFLAGS)
+
 # More flags/options can be added here
 TARGET_RELEASE_CFLAGS := \
 			-DNDEBUG \
-			-O2 -g \
+			$(ARCHIDROID_GCC_CFLAGS_ARM) \
 			-Wstrict-aliasing=2 \
 			-fgcse-after-reload \
 			-frerun-cse-after-loop \

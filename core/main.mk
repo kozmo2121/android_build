@@ -391,7 +391,7 @@ ifeq (true,$(strip $(enable_target_debugging)))
   # Target is more debuggable and adbd is on by default
   ADDITIONAL_DEFAULT_PROPERTIES += ro.debuggable=1
   # Enable Dalvik lock contention logging.
-  ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.lockprof.threshold=500
+  #ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.lockprof.threshold=500
   # Include the debugging/testing OTA keys in this build.
   INCLUDE_TEST_OTA_KEYS := true
 else # !enable_target_debugging
@@ -522,12 +522,24 @@ ifneq ($(dont_bother),true)
 # --mindepth=2 makes the prunes not work.
 subdir_makefiles := \
 	$(shell build/tools/findleaves.py $(FIND_LEAVES_EXCLUDES) $(subdirs) Android.mk)
+subdir_makefiles_total := $(words $(subdir_makefiles))
+.KATI_READONLY := subdir_makefiles_total
 
 ifeq ($(USE_SOONG),true)
 subdir_makefiles := $(SOONG_ANDROID_MK) $(call filter-soong-makefiles,$(subdir_makefiles))
 endif
 
-$(foreach mk, $(subdir_makefiles), $(eval include $(mk)))
+ifneq ($(VERBOSE_MK_EVAL),false)
+  $(foreach mk, $(subdir_makefiles), \
+    $(info [$(call inc_and_print,subdir_makefiles_inc)/$(subdir_makefiles_total)] Including Makefile: $(mk)) \
+    $(eval include $(mk)) \
+    $(eval LOCAL_MODULE \:=$(mk)) \
+    $(eval LOCAL_DIR \:= $(patsubst %/,%,$(dir $(mk)))) \
+    $(info LOCAL_MODULE: $(LOCAL_MODULE)) \
+  )
+else
+  $(foreach mk, $(subdir_makefiles), $(eval include $(mk)))
+endif
 
 ifdef PDK_FUSION_PLATFORM_ZIP
 # Bring in the PDK platform.zip modules.
