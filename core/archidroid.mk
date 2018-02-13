@@ -117,4 +117,3 @@ ARCHIDROID_CLANG_UNKNOWN_FLAGS := \
 # However, if you use compiled recovery.img for your device, please disable this flag (comment or set to false), and lower
 # optimization levels instead
 ARCHIDROID_IGNORE_RECOVERY_SIZE := true
-
